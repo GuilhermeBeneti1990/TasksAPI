@@ -1,7 +1,8 @@
 package Tasks.Management.controller;
 
-import Tasks.Management.model.Task;
+import Tasks.Management.dto.TaskDTO;
 import Tasks.Management.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,22 +18,22 @@ public class TaskController {
     private TaskService service;
 
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTask(@PathVariable Long id) {
+    public ResponseEntity<TaskDTO> getTask(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createTask(@RequestBody Task task) {
+    public ResponseEntity<?> createTask(@Valid @RequestBody TaskDTO task) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(task));
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> getTasks() {
+    public ResponseEntity<List<TaskDTO>> getTasks() {
         return ResponseEntity.ok(service.findAll());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
+    public ResponseEntity<TaskDTO> updateTask(@PathVariable Long id, @Valid @RequestBody TaskDTO task) {
         return ResponseEntity.ok(service.update(id, task));
     }
 

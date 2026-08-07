@@ -1,9 +1,11 @@
 package Tasks.Management.service;
 
+import Tasks.Management.dto.TaskDTO;
 import Tasks.Management.exception.TaskNotFound;
 import Tasks.Management.model.Task;
 import Tasks.Management.repository.TaskRepository;
-import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,24 +18,30 @@ public class TaskService {
     @Autowired
     private TaskRepository repository;
 
-    public List<Task> findAll () {
-        return repository.findAll();
+    @Autowired
+    private ModelMapper modelMapper;
+
+    public List<TaskDTO> findAll () {
+        return modelMapper.map(repository.findAll(), new TypeToken<List<TaskDTO>>() {}.getType());
     }
 
-    public Task findById(Long id) {
+    public TaskDTO findById(Long id) {
         Optional<Task> taskOp = repository.findById(id);
-        return taskOp.orElseThrow(() -> new TaskNotFound("Tarefa com o ID " + id + " não encontrado!"));
+        TaskDTO taskDTO = modelMapper.map(taskOp.orElseThrow(() -> new TaskNotFound("Tarefa com o ID " + id + " não encontrado!")), TaskDTO.class);
+        return taskDTO;
     }
 
-    public Task create(Task task) {
-        return repository.save(task);
+    public TaskDTO create(TaskDTO task) {
+        Task taskEntity = modelMapper.map(task, Task.class);
+        return modelMapper.map(repository.save(taskEntity), TaskDTO.class);
     }
 
-    public Task update(Long id, Task task) {
+    public TaskDTO update(Long id, TaskDTO task) {
+        Task taskEntity = modelMapper.map(task, Task.class);
         Optional<Task> taskOp = repository.findById(id);
         if(taskOp.isPresent()) {
-            task.setId(id);
-            return repository.save(task);
+            taskEntity.setId(id);
+            return modelMapper.map(repository.save(taskEntity), TaskDTO.class);
         }
         throw new TaskNotFound("Tarefa com o ID " + id + " não encontrado!");
     }
