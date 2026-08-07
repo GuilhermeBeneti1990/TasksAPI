@@ -1,7 +1,9 @@
 package Tasks.Management.service;
 
+import Tasks.Management.exception.TaskNotFound;
 import Tasks.Management.model.Task;
 import Tasks.Management.repository.TaskRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,36 +20,29 @@ public class TaskService {
         return repository.findAll();
     }
 
-    public Optional<Task> findById(Long id) {
-        return repository.findById(id);
+    public Task findById(Long id) {
+        Optional<Task> taskOp = repository.findById(id);
+        return taskOp.orElseThrow(() -> new TaskNotFound("Tarefa com o ID " + id + " não encontrado!"));
     }
 
-    public Optional<Task> create(Task task) {
-        if (task.getId() != null && repository.existsById(task.getId())) {
-            return Optional.empty();
+    public Task create(Task task) {
+        return repository.save(task);
+    }
+
+    public Task update(Long id, Task task) {
+        Optional<Task> taskOp = repository.findById(id);
+        if(taskOp.isPresent()) {
+            task.setId(id);
+            return repository.save(task);
         }
-
-        return Optional.of(repository.save(task));
+        throw new TaskNotFound("Tarefa com o ID " + id + " não encontrado!");
     }
 
-    public Optional<Task> update(Long id, Task task) {
-        return repository.findById(id)
-                .map(taskFound -> {
-                    taskFound.setTitle(task.getTitle());
-                    taskFound.setDescription(task.getDescription());
-                    taskFound.setLocal(task.getLocal());
-                    taskFound.setDate(task.getDate());
-
-                    return repository.save(taskFound);
-                });
-    }
-
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         if (!repository.existsById(id)) {
-            return false;
+            throw new TaskNotFound("Tarefa com o ID " + id + " não encontrado!");
         }
 
         repository.deleteById(id);
-        return true;
     }
 }

@@ -3,6 +3,7 @@ package Tasks.Management.controller;
 import Tasks.Management.model.Task;
 import Tasks.Management.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,17 +18,12 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Task> getTask(@PathVariable Long id) {
-        return ResponseEntity.of(service.findById(id));
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
     public ResponseEntity<?> createTask(@RequestBody Task task) {
-        return service.create(task)
-                .<ResponseEntity<?>>map(createdTask ->
-                        ResponseEntity.status(201).body(createdTask))
-                .orElseGet(() ->
-                        ResponseEntity.badRequest()
-                                .body("Já existe uma tarefa com o id: " + task.getId()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(task));
     }
 
     @GetMapping
@@ -37,15 +33,12 @@ public class TaskController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        return ResponseEntity.of(service.update(id, task));
+        return ResponseEntity.ok(service.update(id, task));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        if (!service.delete(id)) {
-            return ResponseEntity.notFound().build();
-        }
-
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
