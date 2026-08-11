@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
 @Table(name = "tasks")
 public class Task {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,4 +26,12 @@ public class Task {
 
     @Column(nullable = false)
     private LocalDateTime date;
+
+    @ManyToOne
+    @JoinColumn(name = "creatorId")
+    private User creator;
+
+    @OneToMany(mappedBy = "task")
+    private List<Guest> guests;
+
 }
