@@ -2,12 +2,12 @@ package Tasks.Management.service;
 
 import Tasks.Management.dto.TaskDTO;
 import Tasks.Management.exception.TaskNotFound;
+import Tasks.Management.mapper.TaskMapper;
 import Tasks.Management.model.Task;
 import Tasks.Management.repository.TaskRepository;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -19,29 +19,29 @@ public class TaskService {
     private TaskRepository repository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private TaskMapper taskMapper;
 
     public List<TaskDTO> findAll () {
-        return modelMapper.map(repository.findAll(), new TypeToken<List<TaskDTO>>() {}.getType());
+        return taskMapper.toDTOList(repository.findAll());
     }
 
     public TaskDTO findById(Long id) {
         Optional<Task> taskOp = repository.findById(id);
-        TaskDTO taskDTO = modelMapper.map(taskOp.orElseThrow(() -> new TaskNotFound("Tarefa com o ID " + id + " não encontrado!")), TaskDTO.class);
-        return taskDTO;
+        Task task = taskOp.orElseThrow(() -> new TaskNotFound("Tarefa com o ID " + id + " não encontrado!"));
+        return taskMapper.toDTO(task);
     }
 
     public TaskDTO create(TaskDTO task) {
-        Task taskEntity = modelMapper.map(task, Task.class);
-        return modelMapper.map(repository.save(taskEntity), TaskDTO.class);
+        Task taskEntity = taskMapper.toEntity(task);
+        return taskMapper.toDTO(repository.save(taskEntity));
     }
 
     public TaskDTO update(Long id, TaskDTO task) {
-        Task taskEntity = modelMapper.map(task, Task.class);
+        Task taskEntity = taskMapper.toEntity(task);
         Optional<Task> taskOp = repository.findById(id);
         if(taskOp.isPresent()) {
             taskEntity.setId(id);
-            return modelMapper.map(repository.save(taskEntity), TaskDTO.class);
+            return taskMapper.toDTO(repository.save(taskEntity));
         }
         throw new TaskNotFound("Tarefa com o ID " + id + " não encontrado!");
     }
