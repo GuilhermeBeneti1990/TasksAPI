@@ -19,7 +19,7 @@ public class User {
     private String phone;
 
     @OneToMany(mappedBy = "user")
-    private List<Guest> guests;
+    private List<Guest> invites;
 
     @OneToMany(mappedBy = "creator")
     private List<Task> createdTasks;
